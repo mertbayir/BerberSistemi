@@ -1,0 +1,60 @@
+﻿@{
+    Layout = "_LayoutCustomer.cshtml";
+}
+@{
+    ViewBag.Title = "Randevu Oluştur";
+}
+
+<h2>Randevu Oluştur</h2>
+<form method="post" action="/Customer/CreateAppointment">
+    <!-- Berber Seçimi -->
+    <label for="barber">Berber Seçiniz:</label>
+    <select id="barber" name="barberId" required onchange="updateServices()">
+        <option value="">-- Berber Seçiniz --</option>
+        @foreach (var barber in ViewBag.Barbers)
+        {
+            <option value="@barber.Id">@barber.Name</option>
+        }
+    </select>
+
+    <!-- Hizmet Seçimi -->
+    <label for="service">Hizmet Seçiniz:</label>
+    <select id="service" name="service" required>
+        <option value="">-- Önce Berber Seçiniz --</option>
+    </select>
+
+    <!-- Randevu Saati -->
+    <label for="dateTime">Randevu Saati:</label>
+    <select id="dateTime" name="dateTime" required>
+        <option value="">-- Saat Seçiniz --</option>
+        @foreach (var time in ViewBag.AvailableTimes)
+        {
+            <option value="@time">@time</option>
+        }
+    </select>
+
+    <button type="submit">Randevu Al</button>
+</form>
+
+<script>
+    // Berberlere göre hizmetleri güncelle
+    function updateServices() {
+        const barbers = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Barbers));
+        const barberId = document.getElementById("barber").value;
+        const serviceSelect = document.getElementById("service");
+
+        // Önceki seçenekleri temizle
+        serviceSelect.innerHTML = '<option value="">-- Hizmet Seçiniz --</option>';
+
+        // Berber seçildiyse ilgili hizmetleri ekle
+        const selectedBarber = barbers.find(barber => barber.Id == barberId);
+        if (selectedBarber) {
+            selectedBarber.Services.forEach(service => {
+                const option = document.createElement("option");
+                option.value = service;
+                option.textContent = service;
+                serviceSelect.appendChild(option);
+            });
+        }
+    }
+</script>

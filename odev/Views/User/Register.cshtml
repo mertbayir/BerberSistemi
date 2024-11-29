@@ -1,0 +1,25 @@
+﻿@model User
+
+<form asp-action="Register" method="post">
+    <br />
+    <div>
+        <label asp-for="Email" class=" form-control">Kullanıcı Adı:</label>
+        <br />
+        <input asp-for="Email" required />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <br />
+    <div>
+        <label asp-for="Password" class="form-control">Şifre:</label>
+        <br />
+        <input asp-for="Password" type="password" required />
+        <span asp-validation-for="Password"></span>
+    </div>
+    <br />
+    <button type="submit">Üye Ol</button>
+</form>
+
+@if (ViewBag.Error != null)
+{
+    <p style="color:red;">@ViewBag.Error</p>
+}
