@@ -7,7 +7,6 @@ namespace odev.Models
 		public DbSet<User> Users { get; set; }
         public DbSet<Barber> Barbers { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
-
         public UserContext(DbContextOptions<UserContext> options) : base(options)
         {
 

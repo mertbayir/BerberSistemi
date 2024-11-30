@@ -85,8 +85,25 @@ namespace odev.Controllers
             }
             else
             {
-                HttpContext.Session.SetString("Email", email);
-                return RedirectToAction("Customerpanel","Customer");
+                var user = _context.Users
+                .FirstOrDefault(u => u.Email == email && u.Password == password);
+
+                if (user != null)
+                {
+                    // Kullanıcı bulunduysa, session'a giriş bilgisini kaydet
+                    HttpContext.Session.SetString("Email", user.Email);
+                    HttpContext.Session.SetString("Role", user.Role);
+
+                    // Kullanıcıyı başarılı bir şekilde yönlendir
+                    return RedirectToAction("Customerpanel", "Customer");
+                }
+                else
+                {
+                    // Hatalı giriş bilgisi
+                    ViewBag.ErrorMessage = "Kullanıcı adı veya şifre hatalı.";
+                    return RedirectToAction("Login","User");
+                }
+
             }
         }
 

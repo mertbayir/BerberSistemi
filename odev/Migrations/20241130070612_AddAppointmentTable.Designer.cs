@@ -12,8 +12,8 @@ using odev.Models;
 namespace odev.Migrations
 {
     [DbContext(typeof(UserContext))]
-    [Migration("20241129090210_RandevuTablosu")]
-    partial class RandevuTablosu
+    [Migration("20241130070612_AddAppointmentTable")]
+    partial class AddAppointmentTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,6 +36,10 @@ namespace odev.Migrations
                     b.Property<int>("BarberId")
                         .HasColumnType("int");
 
+                    b.Property<string>("BarberName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
@@ -43,14 +47,22 @@ namespace odev.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserID")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BarberId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("Appointments");
                 });
@@ -62,10 +74,6 @@ namespace odev.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Expertise")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -111,7 +119,7 @@ namespace odev.Migrations
 
                     b.HasOne("odev.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

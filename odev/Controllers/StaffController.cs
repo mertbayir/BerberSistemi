@@ -29,24 +29,5 @@ namespace odev.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [HttpGet]
-        public IActionResult Manage(string barberName)
-        {
-            // Giriş yapan berberin Id'sine göre randevuları getir
-            var appointments = _context.Appointments
-                .Where(a => a.Barber.Name == barberName)
-                .OrderBy(a => a.DateTime)  // Tarihe göre sıralama
-                .Select(a => new
-                {
-                    a.Id,
-                    a.Service,
-                    a.DateTime,
-                    CustomerName = a.User.Email // Kullanıcı ismini alıyoruz
-                })
-                .ToList();
-
-            ViewBag.Appointments = appointments;
-            return View();
-        }
     }
 }

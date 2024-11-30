@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using odev.Filters;
 using odev.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace odev.Controllers
 {
@@ -13,7 +15,7 @@ namespace odev.Controllers
             ViewData["Layout"] = "~/Views/Customer/_LayoutCustomer.cshtml";
             return View();
         }
-        public IActionResult Appointment() 
+        public IActionResult Appointment()
         {
             return View();
         }
@@ -27,65 +29,74 @@ namespace odev.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-		private readonly UserContext _context;
+        private readonly UserContext _context;
 
-		public CustomerController(UserContext context)
-		{
-			_context = context;
-		}
+        public CustomerController(UserContext context)
+        {
+            _context = context;
 
+
+        }
         [HttpGet]
         public IActionResult CreateAppointment()
         {
-            // Berber listesi (sabit veri)
-            var barbers = new List<dynamic>
-    {
-        new { Id = 1, Name = "Mert Bayır", Services = new List<string> { "Saç Kesimi", "Saç Boyama" } },
-        new { Id = 2, Name = "Ahmet Sönmez", Services = new List<string> { "Saç Kesimi", "Sakal Kesimi", "Cilt Bakımı" } },
-        new { Id = 3, Name = "Hakan Bilgili", Services = new List<string> { "Tasarım Tıraşı", "Çocuk Tıraşı", "Damat Tıraşı" } }
-    };
-
-            // Sabit randevu saatleri
-            var availableTimes = new List<string>
-    {
-        "09:00", "10:30", "12:00", "14:00", "15:30", "17:00"
-    };
-
-            ViewBag.Barbers = barbers;
-            ViewBag.AvailableTimes = availableTimes;
-
+            // Dinamik olarak berber ve saat bilgilerini view'a gönderelim.
+            ViewBag.Barbers = new List<string> { "Deniz Akçay", "Ahmet Sönmez", "Hakan Bilgili" };
+            ViewBag.Times = new List<string> { "09:00", "10:30", "12:00", "14:00", "15:30", "17:00" };
+            ViewBag.Services = new List<string> { "Saç Kesimi", "Saç Boyama", "Sakal Tıraşı" };
             return View();
         }
 
-        // 2. Randevu oluşturma işlemi
+        // Create Appointment - POST Method
         [HttpPost]
-        public async Task<IActionResult> CreateAppointment(int barberId, string service, DateTime dateTime)
+        public IActionResult CreateAppointment(Appointment appointment,string Time)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");  // Giriş yapan kullanıcının Id'sini al
-            if (userId == null)
+            var userName = HttpContext.Session.GetString("Email");
+
+            if (string.IsNullOrEmpty(userName))
             {
-                return RedirectToAction("Customerpanel", "Customer");  // Giriş yapılmadıysa Login sayfasına yönlendir
+                return RedirectToAction("Login", "Account"); // Kullanıcı giriş yapmamışsa
             }
 
-            // Yeni bir randevu oluştur
-            var appointment = new Appointment
+            // Çakışma kontrolü
+            bool isAvailable = !_context.Appointments.Any(a =>
+                a.BarberName == appointment.BarberName &&
+                a.DateTime == appointment.DateTime);
+
+            if (!isAvailable)
             {
-                UserId = userId.Value,
-                BarberId = barberId,
-                Service = service,
-                DateTime = dateTime
-            };
+                ModelState.AddModelError("", "Seçilen berber için bu saat dolu.");
+                ViewBag.Barbers = new List<string> { "Deniz Akçay", "Ahmet Sönmez", "Hakan Bilgili" };
+                ViewBag.Services = new List<string> { "Saç Kesimi", "Saç Boyama", "Sakal Tıraşı" };
+                ViewBag.Times = new List<string> { "09:00", "10:30", "12:00", "14:00", "15:30", "17:00" };
+                return View(appointment);
+            }
 
+            appointment.UserName = userName; 
+            appointment.Status = "Valid";   
+
+            // Randevuyu kaydet
             _context.Appointments.Add(appointment);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            return RedirectToAction("AppointmentConfirmation");
+            return RedirectToAction("ListApp");
         }
 
-        // 3. Randevu onayı ekranı
-        public IActionResult AppointmentConfirmation()
+        // Kullanıcının aldığı randevuları listeleme
+        public IActionResult ListApp()
         {
-            return View();
+            var userName = HttpContext.Session.GetString("Email");
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var appointments = _context.Appointments
+                .Where(a => a.UserName == userName)
+                .ToList();
+
+            return View(appointments);
         }
 
     }

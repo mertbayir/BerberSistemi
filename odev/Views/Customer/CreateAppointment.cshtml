@@ -1,60 +1,79 @@
 ﻿@{
     Layout = "_LayoutCustomer.cshtml";
 }
-@{
-    ViewBag.Title = "Randevu Oluştur";
-}
 
-<h2>Randevu Oluştur</h2>
-<form method="post" action="/Customer/CreateAppointment">
+@model odev.Models.Appointment
+
+<h2>Randevu Al</h2>
+
+<form asp-action="CreateAppointment" method="post">
     <!-- Berber Seçimi -->
-    <label for="barber">Berber Seçiniz:</label>
-    <select id="barber" name="barberId" required onchange="updateServices()">
-        <option value="">-- Berber Seçiniz --</option>
-        @foreach (var barber in ViewBag.Barbers)
-        {
-            <option value="@barber.Id">@barber.Name</option>
-        }
-    </select>
+    <div>
+        <label>Berber Seçin:</label>
+        <select id="BarberName" name="BarberName" required>
+            <option value="" disabled selected>Berber Seçin</option>
+            <option value="Deniz Akçay">Deniz Akçay</option>
+            <option value="Ahmet Sönmez">Ahmet Sönmez</option>
+            <option value="Hakan Bilgili">Hakan Bilgili</option>
+        </select>
+    </div>
 
     <!-- Hizmet Seçimi -->
-    <label for="service">Hizmet Seçiniz:</label>
-    <select id="service" name="service" required>
-        <option value="">-- Önce Berber Seçiniz --</option>
-    </select>
+    <div>
+        <label>Hizmet Seçin:</label>
+        <select id="Service" name="Service" required>
+            <option value="" disabled selected>Önce bir berber seçin</option>
+        </select>
+    </div>
 
-    <!-- Randevu Saati -->
-    <label for="dateTime">Randevu Saati:</label>
-    <select id="dateTime" name="dateTime" required>
-        <option value="">-- Saat Seçiniz --</option>
-        @foreach (var time in ViewBag.AvailableTimes)
-        {
-            <option value="@time">@time</option>
-        }
-    </select>
+    <!-- Tarih Seçimi -->
+    <div>
+        <label>Tarih:</label>
+        <input type="date" name="DateTime" required />
+    </div>
 
-    <button type="submit">Randevu Al</button>
+    <!-- Saat Seçimi -->
+    <div>
+        <label>Saat:</label>
+        <select name="DateTime" required>
+            <option value="" disabled selected>Saat Seçin</option>
+            <option value="09:00">09:00</option>
+            <option value="10:30">10:30</option>
+            <option value="12:00">12:00</option>
+            <option value="14:00">14:00</option>
+            <option value="15:30">15:30</option>
+            <option value="17:00">17:00</option>
+        </select>
+    </div>
+
+    <button type="submit">Randevu Oluştur</button>
 </form>
 
 <script>
-    // Berberlere göre hizmetleri güncelle
-    function updateServices() {
-        const barbers = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Barbers));
-        const barberId = document.getElementById("barber").value;
-        const serviceSelect = document.getElementById("service");
+    // Her berber için uygun hizmetler
+    const servicesByBarber = {
+        "Deniz Akçay": ["Saç Kesimi", "Saç Boyama"],
+        "Ahmet Sönmez": ["Saç Kesimi", "Sakal Kesimi", "Saç Boyama"],
+        "Hakan Bilgili": ["Tasarım Tıraşı", "Çocuk Tıraşı", "Damat Tıraşı"]
+    };
 
-        // Önceki seçenekleri temizle
-        serviceSelect.innerHTML = '<option value="">-- Hizmet Seçiniz --</option>';
+    // Berber seçimi değiştiğinde hizmetleri güncelle
+    document.getElementById("BarberName").addEventListener("change", function () {
+        const selectedBarber = this.value;
+        const serviceSelect = document.getElementById("Service");
 
-        // Berber seçildiyse ilgili hizmetleri ekle
-        const selectedBarber = barbers.find(barber => barber.Id == barberId);
-        if (selectedBarber) {
-            selectedBarber.Services.forEach(service => {
+        // Önce mevcut seçenekleri temizle
+        serviceSelect.innerHTML = '<option value="" disabled selected>Hizmet Seçin</option>';
+
+        // Seçilen berberin hizmetlerini ekle
+        if (servicesByBarber[selectedBarber]) {
+            servicesByBarber[selectedBarber].forEach(service => {
                 const option = document.createElement("option");
                 option.value = service;
                 option.textContent = service;
                 serviceSelect.appendChild(option);
             });
         }
-    }
+    });
 </script>
+

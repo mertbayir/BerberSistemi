@@ -1,0 +1,30 @@
+﻿@{
+    Layout = "_LayoutCustomer.cshtml";
+}
+
+
+@model List<odev.Models.Appointment>
+
+<h2>Alınan Randevular</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Berber Adı</th>
+            <th>Hizmet</th>
+            <th>Tarih ve Saat</th>
+            <th>Durum</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var appointment in Model)
+        {
+            <tr>
+                <td>@appointment.BarberName</td>
+                <td>@appointment.Service</td>
+                <td>@appointment.DateTime.ToString("dd-MM-yyyy HH:mm")</td>
+                <td>@appointment.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
