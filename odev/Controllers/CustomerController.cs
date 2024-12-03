@@ -40,11 +40,17 @@ namespace odev.Controllers
         [HttpGet]
         public IActionResult CreateAppointment()
         {
-            // Dinamik olarak berber ve saat bilgilerini view'a gönderelim.
-            ViewBag.Barbers = new List<string> { "Deniz Akçay", "Ahmet Sönmez", "Hakan Bilgili" };
-            ViewBag.Times = new List<string> { "09:00", "10:30", "12:00", "14:00", "15:30", "17:00" };
-            ViewBag.Services = new List<string> { "Saç Kesimi", "Saç Boyama", "Sakal Tıraşı" };
-            return View();
+              var barbers = _context.Barbers.Select(b => new
+        {
+            b.Id,
+            b.Name,
+            b.Skills
+        }).ToList();
+
+        // Veriyi View'a gönder
+        ViewBag.Barbers = barbers;
+
+        return View();
         }
 
         // Create Appointment - POST Method
@@ -61,7 +67,8 @@ namespace odev.Controllers
             // Çakışma kontrolü
             bool isAvailable = !_context.Appointments.Any(a =>
                 a.BarberName == appointment.BarberName &&
-                a.DateTime == appointment.DateTime);
+                a.Date == appointment.Date &&
+                a.Time == appointment.Time);
 
             if (!isAvailable)
             {
@@ -99,5 +106,24 @@ namespace odev.Controllers
             return View(appointments);
         }
 
+        [HttpPost]
+        public IActionResult DeleteAppointment(int id)
+        {
+            // İlgili randevuyu bul
+            var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
+
+            if (appointment != null)
+            {
+                _context.Appointments.Remove(appointment);
+                _context.SaveChanges();
+                TempData["Message"] = "Randevu başarıyla silindi.";
+            }
+            else
+            {
+                TempData["Error"] = "Randevu bulunamadı.";
+            }
+
+            return RedirectToAction("ListApp");
+        }
     }
 }

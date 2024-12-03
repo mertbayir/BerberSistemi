@@ -12,8 +12,10 @@
         <tr>
             <th>Berber Adı</th>
             <th>Hizmet</th>
-            <th>Tarih ve Saat</th>
+            <th>Tarih</th>
+            <th>Saat</th>
             <th>Durum</th>
+            <th>İptal</th>
         </tr>
     </thead>
     <tbody>
@@ -22,9 +24,30 @@
             <tr>
                 <td>@appointment.BarberName</td>
                 <td>@appointment.Service</td>
-                <td>@appointment.DateTime.ToString("dd-MM-yyyy HH:mm")</td>
+                <td>@appointment.Date.ToShortDateString()</td>
+                <td>@appointment.Time.ToString(@"hh\:mm")</td>
                 <td>@appointment.Status</td>
+                 <td>
+                    <form asp-action="DeleteAppointment" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@appointment.Id" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Bu randevuyu silmek istediğinize emin misiniz?');">Sil</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>
 </table>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Error"]
+    </div>
+}

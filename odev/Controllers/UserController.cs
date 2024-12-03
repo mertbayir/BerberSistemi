@@ -6,21 +6,21 @@ using odev.Models;
 
 namespace odev.Controllers
 {
-	public class UserController : Controller
-	{
+    public class UserController : Controller
+    {
         private readonly UserContext _context;
         public UserController(UserContext context)
         {
             _context = context;
         }
         public IActionResult Index()
-		{
-			return View();
-		}
-		public IActionResult Register()
-		{
-			return View();
-		}
+        {
+            return View();
+        }
+        public IActionResult Register()
+        {
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> Register(User user)
@@ -32,7 +32,7 @@ namespace odev.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Kayıt başarılı! Şimdi giriş yapabilirsiniz.";
-                return RedirectToAction("Customerpanel","Customer");
+                return RedirectToAction("Customerpanel", "Customer");
             }
             else
             {
@@ -58,7 +58,7 @@ namespace odev.Controllers
             return View();
         }
 
-        public IActionResult Customerpanel() 
+        public IActionResult Customerpanel()
         {
             return View();
         }
@@ -70,43 +70,43 @@ namespace odev.Controllers
         }
 
         [HttpPost]
-		public IActionResult Login(string email, string password)
-		{
+        public IActionResult Login(string email, string password)
+        {
+            var user = _context.Users
+        .FirstOrDefault(u => u.Email == email && u.Password == password);
 
-            if (email == "mert" && password == "sau")
+            if (user != null)
             {
-                HttpContext.Session.SetString("Email", email);
-                return RedirectToAction("Adminpanel","Admin"); 
-            }
-            else if (email == "ahmet" && password == "sau")
-            {
-                HttpContext.Session.SetString("Email", email);
-                return RedirectToAction("Staffpanel","Staff");
-            }
-            else
-            {
-                var user = _context.Users
-                .FirstOrDefault(u => u.Email == email && u.Password == password);
+                // Kullanıcı bulunduysa, role bilgisini session'a kaydet
+                HttpContext.Session.SetString("Email", user.Email);
+                HttpContext.Session.SetString("Role", user.Role);  // Kullanıcının rolünü kaydediyoruz
 
-                if (user != null)
+                // Role göre yönlendirme yap
+                if (user.Role == "Admin")
                 {
-                    // Kullanıcı bulunduysa, session'a giriş bilgisini kaydet
-                    HttpContext.Session.SetString("Email", user.Email);
-                    HttpContext.Session.SetString("Role", user.Role);
-
-                    // Kullanıcıyı başarılı bir şekilde yönlendir
+                    return RedirectToAction("Adminpanel", "Admin");
+                }
+                else if (user.Role == "Staff")
+                {
+                    return RedirectToAction("Staffpanel", "Staff");
+                }
+                else if (user.Role == "Customer")
+                {
                     return RedirectToAction("Customerpanel", "Customer");
                 }
                 else
                 {
-                    // Hatalı giriş bilgisi
-                    ViewBag.ErrorMessage = "Kullanıcı adı veya şifre hatalı.";
-                    return RedirectToAction("Login","User");
+                    // Eğer beklenmedik bir role gelirse hata mesajı
+                    ViewBag.ErrorMessage = "Geçersiz kullanıcı rolü.";
+                    return View("Error");
                 }
-
+            }
+            else
+            {
+                // Hatalı giriş durumu
+                ViewBag.ErrorMessage = "Kullanıcı adı veya şifre hatalı.";
+                return View();
             }
         }
-
-
     }
 }

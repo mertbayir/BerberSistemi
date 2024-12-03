@@ -1,0 +1,21 @@
+﻿@model odev.Models.Barber
+
+@{
+    Layout = "_LayoutAdmin.cshtml";
+}
+
+<h2>Personel Ekle</h2>
+
+<form asp-action="AddBarber" method="post">
+    <div class="form-group">
+        <label for="FirstName">Ad</label>
+        <input asp-for="Name" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Skills">Yetkinlikler</label>
+        <textarea asp-for="Skills" class="form-control" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Ekle</button>
+</form>

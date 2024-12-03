@@ -5,19 +5,21 @@
 
 <h2>Giriş Yap</h2>
 
-<form asp-action="Login" method="post">
+<form asp-action="Login" asp-controller ="User" method="post">
     <br />
     <div class ="form-control">
-        <label asp-for ="Email">Kullanıcı Adı:</label>
-        <input type="text" asp-for="Email" required />
+        <label asp-for ="Email"></label>
+        <input type="text" asp-for="Email" />
+        <span asp-validation-for="Email" class="text-danger"></span>
     </div>
     <br />
     <div class="form-control">
-        <label asp-for="Password">Şifre:</label>
-        <input type="password" asp-for="Password" required />
+        <label asp-for="Password"></label>
+        <input type="password" asp-for="Password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
     </div>
     <br />
-    <button type="submit">Giriş Yap</button>
+    <button type="submit" class="btn btn-success" >Giriş Yap</button>
     <br />
     <br />
     <p>Üye Değil Misiniz? <a href="Register">Buradan Üye Olun</a></p>

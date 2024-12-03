@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "Saç Stili Önerisi";
+}
+
+
+<h2>Saç Stili Önerisi</h2>
+
+<form asp-action="GetRecommendation" method="post" enctype="multipart/form-data">
+    <label for="uploadedImage">Bir fotoğraf yükleyin:</label>
+    <input type="file" name="uploadedImage" id="uploadedImage" />
+    <button type="submit">Gönder</button>
+</form>
+
+@if (ViewBag.Recommendation != null)
+{
+    <h3>Önerilen Saç Stilleri:</h3>
+    <ul>
+        @foreach (var item in ViewBag.Recommendation)
+        {
+            <li>@item</li>
+        }
+    </ul>
+}

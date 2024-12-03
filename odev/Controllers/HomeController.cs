@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using odev.Models;
+using odev.Services;
 using System.Diagnostics;
 
 namespace odev.Controllers
@@ -7,7 +8,6 @@ namespace odev.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;

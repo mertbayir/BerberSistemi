@@ -4,38 +4,45 @@
 
 @model odev.Models.Appointment
 
+
 <h2>Randevu Al</h2>
 
 <form asp-action="CreateAppointment" method="post">
-    <!-- Berber Seçimi -->
+   
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger">
+            <p>Seçtiğiniz Randevu Uygun Değildir</p>
+        </div>
+    }
+
     <div>
         <label>Berber Seçin:</label>
-        <select id="BarberName" name="BarberName" required>
+        <select id="Name" name="Name" required>
             <option value="" disabled selected>Berber Seçin</option>
-            <option value="Deniz Akçay">Deniz Akçay</option>
-            <option value="Ahmet Sönmez">Ahmet Sönmez</option>
-            <option value="Hakan Bilgili">Hakan Bilgili</option>
+            @foreach (var barber in ViewBag.Barbers)
+            {
+                <option value="@barber.Name">@barber.Name</option>
+            }
         </select>
     </div>
 
-    <!-- Hizmet Seçimi -->
     <div>
         <label>Hizmet Seçin:</label>
-        <select id="Service" name="Service" required>
-            <option value="" disabled selected>Önce bir berber seçin</option>
+        <select id="Skills" name="Skills" required>
         </select>
     </div>
 
     <!-- Tarih Seçimi -->
     <div>
         <label>Tarih:</label>
-        <input type="date" name="DateTime" required />
+        <input type="date" name="Date" required />
     </div>
 
     <!-- Saat Seçimi -->
     <div>
         <label>Saat:</label>
-        <select name="DateTime" required>
+        <select name="Time" required>
             <option value="" disabled selected>Saat Seçin</option>
             <option value="09:00">09:00</option>
             <option value="10:30">10:30</option>
@@ -49,31 +56,44 @@
     <button type="submit">Randevu Oluştur</button>
 </form>
 
+
 <script>
-    // Her berber için uygun hizmetler
-    const servicesByBarber = {
-        "Deniz Akçay": ["Saç Kesimi", "Saç Boyama"],
-        "Ahmet Sönmez": ["Saç Kesimi", "Sakal Kesimi", "Saç Boyama"],
-        "Hakan Bilgili": ["Tasarım Tıraşı", "Çocuk Tıraşı", "Damat Tıraşı"]
-    };
+    // Veritabanından gelen berber verilerini JavaScript'e aktarma
+    var barbers = @Html.Raw(Json.Serialize(ViewBag.Barbers));
 
-    // Berber seçimi değiştiğinde hizmetleri güncelle
-    document.getElementById("BarberName").addEventListener("change", function () {
-        const selectedBarber = this.value;
-        const serviceSelect = document.getElementById("Service");
+    // Konsola barbers verisini yazdırarak kontrol et
+    console.log(barbers); // Burada konsolda barbers verisini inceleyin
 
-        // Önce mevcut seçenekleri temizle
-        serviceSelect.innerHTML = '<option value="" disabled selected>Hizmet Seçin</option>';
+    // Berber seçildiğinde hizmet listesini güncelleme
+    document.getElementById("Name").addEventListener("change", function () {
+        var selectedBarber = this.value;
+        var skillsDropdown = document.getElementById("Skills");
 
-        // Seçilen berberin hizmetlerini ekle
-        if (servicesByBarber[selectedBarber]) {
-            servicesByBarber[selectedBarber].forEach(service => {
-                const option = document.createElement("option");
-                option.value = service;
-                option.textContent = service;
-                serviceSelect.appendChild(option);
-            });
-        }
+        // Seçilen berberin verilerini bulma
+        var selectedBarberData = barbers.find(function (barber) {
+            return barber.Name === selectedBarber;
+        });
+
+        // Seçilen berberin verilerini kontrol etme
+        console.log(selectedBarberData.skills); // Burada konsola seçilen berberin verisini yazdırarak kontrol edin
+
+
+       
+            var skills = barbers.Skills; // Hizmetleri virgülle ayırma
+            console.log(barbers); // Hizmetleri konsolda kontrol et
+    
+
+
+            // Mevcut hizmet seçeneklerini temizleme
+            skillsDropdown.innerHTML = "<option value='' disabled selected>Hizmet Seçin</option>";
+
+            // Yeni hizmet seçeneklerini ekleme
+           /* skills.forEach(function (skill) {
+                var option = document.createElement("option");
+                option.value = skill.trim(); // Hizmeti seçenek olarak ekle
+                option.text = skill.trim();  // Hizmeti metin olarak ekle
+                skillsDropdown.appendChild(option);
+            });*/
+      
     });
 </script>
-

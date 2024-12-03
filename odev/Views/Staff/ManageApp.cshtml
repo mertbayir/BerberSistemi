@@ -1,0 +1,43 @@
+﻿@{
+    Layout = "_LayoutStaff.cshtml";
+}
+@model IEnumerable<odev.Models.Appointment>
+
+<h2>Randevularım</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Saat</th>
+            <th>Müşteri</th>
+            <th>Hizmet</th>
+            <th>İşlemi İptal Et</th>
+            <th>İşlemi Onayla</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var appointment in Model)
+        {
+            <tr>
+                <td>@appointment.Date.ToShortDateString()</td>
+                <td>@appointment.Time.ToString(@"hh\:mm")</td>
+                <td>@appointment.UserName</td>
+                <td>@appointment.Service</td>
+                <td>
+                    @Html.AntiForgeryToken()
+                    <form asp-action="DeleteAppointment" method="post">
+                        <input type="hidden" name="id" value="@appointment.Id" />
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Bu randevuyu silmek istediğinizden emin misiniz?');">Sil</button>
+                    </form>
+                </td>
+                <td>
+                    <form asp-controller="Staff" asp-action="ConfirmAppointment" method="post">
+                        <input type="hidden" name="id" value="@appointment.Id" />
+                        <button type="submit" class="btn btn-success">Onayla</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
