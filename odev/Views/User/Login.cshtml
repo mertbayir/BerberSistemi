@@ -1,9 +1,18 @@
 ﻿@model User
 @{
     ViewBag.Title = "Giriş Yap";
+    var errorMsg = ViewBag.ErrorMessage;
 }
 
 <h2>Giriş Yap</h2>
+
+
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div class="alert alert-danger">
+        @errorMsg
+    </div>
+}
 
 <form asp-action="Login" asp-controller ="User" method="post">
     <br />

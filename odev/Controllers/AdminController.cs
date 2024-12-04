@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using odev.Filters;
 using odev.Models;
+using System.Reflection.Metadata;
 
 namespace odev.Controllers
 {
@@ -32,19 +33,52 @@ namespace odev.Controllers
         [HttpGet]
         public IActionResult AddBarber()
         {
-            return View();
+            var model = new BarberUserViewModel();
+            return View(model);
         }
 
         [HttpPost]
-        public IActionResult AddBarber(Barber barber)
+        public IActionResult AddBarber(BarberUserViewModel model)
         {
             if (ModelState.IsValid)
             {
-                _context.Barbers.Add(barber);
+                _context.Barbers.Add(model.Barber);
                 _context.SaveChanges();
+
+
+                var user = new User
+                {
+                    Email = model.User.Email, // Berber adı
+                    Password = model.User.Password, // Şifreyi istediğiniz gibi belirleyebilirsiniz
+                    Role = "Staff" // Kullanıcı rolü
+                };
+
+                _context.Users.Add(user);
+                _context.SaveChanges();
+;
+
+
                 return RedirectToAction("Adminpanel", "Admin"); // Admin paneline geri döner
             }
-            return View(barber); // Hatalı giriş varsa yeniden göster
+            return View(model); // Hatalı giriş varsa yeniden göster
+        }
+
+        public IActionResult Manage()
+        {
+            var users = _context.Users.ToList(); // Veritabanından tüm kullanıcıları al
+            return View(users);
+        }
+
+        public IActionResult DeleteUser(int id)
+        {
+            var user = _context.Users.Find(id); // Kullanıcıyı id'ye göre bul
+            if (user != null)
+            {
+                _context.Users.Remove(user); // Kullanıcıyı sil
+                _context.SaveChanges(); // Değişiklikleri kaydet
+            }
+
+            return RedirectToAction("Manage"); // Yönetim sayfasına geri dön
         }
     }
 }

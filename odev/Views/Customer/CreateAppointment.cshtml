@@ -4,11 +4,14 @@
 
 @model odev.Models.Appointment
 
-
 <h2>Randevu Al</h2>
 
+@{
+    var barbers = ViewBag.Barbers;
+}
+
 <form asp-action="CreateAppointment" method="post">
-   
+
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="alert alert-danger">
@@ -18,18 +21,19 @@
 
     <div>
         <label>Berber Seçin:</label>
-        <select id="Name" name="Name" required>
+        <select id="Name" name="BarberName" required onchange="updateSkills()">
             <option value="" disabled selected>Berber Seçin</option>
-            @foreach (var barber in ViewBag.Barbers)
+            @foreach (var barber in barbers)
             {
-                <option value="@barber.Name">@barber.Name</option>
+                <option value="@barber.Name" data-skills="@barber.Skills">@barber.Name</option>
             }
         </select>
     </div>
 
     <div>
         <label>Hizmet Seçin:</label>
-        <select id="Skills" name="Skills" required>
+        <select id="Skills" name="Service" required>
+            <option value="" disabled selected>Hizmet Seçin</option>
         </select>
     </div>
 
@@ -56,44 +60,28 @@
     <button type="submit">Randevu Oluştur</button>
 </form>
 
-
 <script>
-    // Veritabanından gelen berber verilerini JavaScript'e aktarma
-    var barbers = @Html.Raw(Json.Serialize(ViewBag.Barbers));
+    function updateSkills() {
+        var barberSelect = document.getElementById("Name");
+        var barberName = barberSelect.value;
 
-    // Konsola barbers verisini yazdırarak kontrol et
-    console.log(barbers); // Burada konsolda barbers verisini inceleyin
+        // Berber seçeneklerini al
+        var selectedBarber = Array.from(barberSelect.options).find(option => option.value === barberName);
+        var skills = selectedBarber ? selectedBarber.getAttribute("data-skills") : "";
 
-    // Berber seçildiğinde hizmet listesini güncelleme
-    document.getElementById("Name").addEventListener("change", function () {
-        var selectedBarber = this.value;
-        var skillsDropdown = document.getElementById("Skills");
+        // Hizmetler dropdown'ını temizle
+        var skillsSelect = document.getElementById("Skills");
+        skillsSelect.innerHTML = '<option value="" disabled selected>Hizmet Seçin</option>';
 
-        // Seçilen berberin verilerini bulma
-        var selectedBarberData = barbers.find(function (barber) {
-            return barber.Name === selectedBarber;
-        });
-
-        // Seçilen berberin verilerini kontrol etme
-        console.log(selectedBarberData.skills); // Burada konsola seçilen berberin verisini yazdırarak kontrol edin
-
-
-       
-            var skills = barbers.Skills; // Hizmetleri virgülle ayırma
-            console.log(barbers); // Hizmetleri konsolda kontrol et
-    
-
-
-            // Mevcut hizmet seçeneklerini temizleme
-            skillsDropdown.innerHTML = "<option value='' disabled selected>Hizmet Seçin</option>";
-
-            // Yeni hizmet seçeneklerini ekleme
-           /* skills.forEach(function (skill) {
+        if (skills) {
+            // Berberin hizmetlerini virgülle ayırarak ekle
+            var skillsList = skills.split(',');
+            skillsList.forEach(function (skill) {
                 var option = document.createElement("option");
-                option.value = skill.trim(); // Hizmeti seçenek olarak ekle
-                option.text = skill.trim();  // Hizmeti metin olarak ekle
-                skillsDropdown.appendChild(option);
-            });*/
-      
-    });
+                option.value = skill.trim();
+                option.text = skill.trim();
+                skillsSelect.appendChild(option);
+            });
+        }
+    }
 </script>

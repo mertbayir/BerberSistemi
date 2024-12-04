@@ -1,4 +1,4 @@
-﻿@model odev.Models.Barber
+﻿@model odev.Models.BarberUserViewModel
 
 @{
     Layout = "_LayoutAdmin.cshtml";
@@ -9,13 +9,26 @@
 <form asp-action="AddBarber" method="post">
     <div class="form-group">
         <label for="FirstName">Ad</label>
-        <input asp-for="Name" class="form-control" required />
+        <input asp-for="Barber.Name" class="form-control" required />
     </div>
 
     <div class="form-group">
         <label for="Skills">Yetkinlikler</label>
-        <textarea asp-for="Skills" class="form-control" required></textarea>
+        <textarea asp-for="Barber.Skills" class="form-control" required></textarea>
     </div>
 
+    <div class="form-group">
+        <label for="Email">Kullanıcı Adı Giriniz</label>
+        <textarea asp-for="User.Email" class="form-control" required></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="Password">Şifre Giriniz</label>
+        <textarea asp-for="User.Password" class="form-control" required></textarea>
+    </div>
+
+
+
     <button type="submit" class="btn btn-primary">Ekle</button>
+
 </form>

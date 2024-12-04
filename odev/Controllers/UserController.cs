@@ -96,14 +96,11 @@ namespace odev.Controllers
                 }
                 else
                 {
-                    // Eğer beklenmedik bir role gelirse hata mesajı
-                    ViewBag.ErrorMessage = "Geçersiz kullanıcı rolü.";
                     return View("Error");
                 }
             }
             else
             {
-                // Hatalı giriş durumu
                 ViewBag.ErrorMessage = "Kullanıcı adı veya şifre hatalı.";
                 return View();
             }

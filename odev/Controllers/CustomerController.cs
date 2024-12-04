@@ -73,11 +73,29 @@ namespace odev.Controllers
             if (!isAvailable)
             {
                 ModelState.AddModelError("", "Seçilen berber için bu saat dolu.");
-                ViewBag.Barbers = new List<string> { "Deniz Akçay", "Ahmet Sönmez", "Hakan Bilgili" };
-                ViewBag.Services = new List<string> { "Saç Kesimi", "Saç Boyama", "Sakal Tıraşı" };
+                ViewBag.Barbers = _context.Barbers.ToList();
                 ViewBag.Times = new List<string> { "09:00", "10:30", "12:00", "14:00", "15:30", "17:00" };
                 return View(appointment);
             }
+
+            var existingAppointment = _context.Appointments
+                                                     .Where(a => a.UserName == appointment.UserName
+                                                                 && a.Date.Date == appointment.Date.Date) // Aynı gün randevu
+                                                     .FirstOrDefault();
+
+            if (existingAppointment != null)
+            {
+                // Eğer aynı günde zaten bir randevu varsa, hata mesajı göster
+                ModelState.AddModelError("", "Bu gün zaten bir randevunuz var. Lütfen başka bir tarih seçin.");
+                return RedirectToAction("Customerpanel"); // Hata ile geri dön
+            }
+
+            if (appointment.Date.DayOfWeek == DayOfWeek.Saturday || appointment.Date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                ModelState.AddModelError("", "Hafta sonu randevu almanız mümkün değildir.");
+                return View(appointment); // Hata ile geri dön
+            }
+
 
             appointment.UserName = userName; 
             appointment.Status = "Valid";   
