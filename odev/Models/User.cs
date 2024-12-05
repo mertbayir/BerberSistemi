@@ -4,6 +4,10 @@ namespace odev.Models
 {
     public class User
     {
+        [Required(ErrorMessage = "Bu Alan Boş Bırakılamaz")]
+        [Display(Name = "Ad Soyad :")] 
+        public string UserName { get; set; }
+
         [Required(ErrorMessage="Bu Alan Boş Bırakılamaz")]
         [Display(Name = "Kullanıcı Adı (İsim Soyisim şeklinde giriniz) :")]
         public string Email { get; set; }

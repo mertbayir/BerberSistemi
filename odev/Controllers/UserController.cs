@@ -79,6 +79,7 @@ namespace odev.Controllers
             {
                 // Kullanıcı bulunduysa, role bilgisini session'a kaydet
                 HttpContext.Session.SetString("Email", user.Email);
+                HttpContext.Session.SetString("UserName", user.UserName);
                 HttpContext.Session.SetString("Role", user.Role);  // Kullanıcının rolünü kaydediyoruz
 
                 // Role göre yönlendirme yap

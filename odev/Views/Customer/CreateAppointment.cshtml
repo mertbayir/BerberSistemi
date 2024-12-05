@@ -4,13 +4,26 @@
 
 @model odev.Models.Appointment
 
-<h2>Randevu Al</h2>
-
 @{
     var barbers = ViewBag.Barbers;
 }
 
-<form asp-action="CreateAppointment" method="post">
+
+@if (TempData["AppErr"] != null)
+{
+    <div class="alert alert-warning">
+        @TempData["AppErr"]
+    </div>
+}
+
+
+<br />
+
+<h2 class="text-center">Randevu Al</h2>
+
+<br />
+
+<form asp-action="CreateAppointment" method="post" class="p-4 border rounded shadow-sm">
 
     @if (!ViewData.ModelState.IsValid)
     {
@@ -19,9 +32,10 @@
         </div>
     }
 
-    <div>
-        <label>Berber Seçin:</label>
-        <select id="Name" name="BarberName" required onchange="updateSkills()">
+    <!-- Berber Seçimi -->
+    <div class="form-group">
+        <label for="Name">Berber Seçin:</label>
+        <select id="Name" name="BarberName" class="form-control" required onchange="updateSkills()">
             <option value="" disabled selected>Berber Seçin</option>
             @foreach (var barber in barbers)
             {
@@ -30,23 +44,32 @@
         </select>
     </div>
 
-    <div>
-        <label>Hizmet Seçin:</label>
-        <select id="Skills" name="Service" required>
+    <br />
+
+    <!-- Hizmet Seçimi -->
+    <div class="form-group">
+        <label for="Skills">Hizmet Seçin:</label>
+        <select id="Skills" name="Service" class="form-control" required>
             <option value="" disabled selected>Hizmet Seçin</option>
         </select>
     </div>
 
+    <br />
+
+
     <!-- Tarih Seçimi -->
-    <div>
-        <label>Tarih:</label>
-        <input type="date" name="Date" required />
+    <div class="form-group">
+        <label for="Date">Tarih:</label>
+        <input type="date" name="Date" class="form-control" required />
     </div>
 
+    <br />
+
+
     <!-- Saat Seçimi -->
-    <div>
-        <label>Saat:</label>
-        <select name="Time" required>
+    <div class="form-group">
+        <label for="Time">Saat:</label>
+        <select name="Time" class="form-control" required>
             <option value="" disabled selected>Saat Seçin</option>
             <option value="09:00">09:00</option>
             <option value="10:30">10:30</option>
@@ -57,8 +80,14 @@
         </select>
     </div>
 
-    <button type="submit">Randevu Oluştur</button>
+    <br />
+
+    <!-- Gönder Butonu -->
+    <div class="form-group text-center">
+        <button type="submit" class="btn btn-primary btn-lg">Randevu Oluştur</button>
+    </div>
 </form>
+
 
 <script>
     function updateSkills() {

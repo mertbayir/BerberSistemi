@@ -31,7 +31,7 @@ namespace odev.Controllers
 
         public IActionResult ManageApp()
         {
-            string staffEmail = HttpContext.Session.GetString("Email");
+            string staffEmail = HttpContext.Session.GetString("UserName");
 
 
             var appointments = _context.Appointments
@@ -57,9 +57,11 @@ namespace odev.Controllers
                 return NotFound(); // Eğer randevu bulunamazsa hata döndür
             }
 
-            // Randevuyu sil
-            _context.Appointments.Remove(appointment);
-            _context.SaveChanges();
+            if (appointment != null)
+            {
+                appointment.Status = "İptal"; // Randevuyu onayla
+                _context.SaveChanges();
+            }
 
             // Randevu listesine geri dön
             return RedirectToAction("ManageApp");
@@ -71,7 +73,7 @@ namespace odev.Controllers
             var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
             if (appointment != null)
             {
-                appointment.Status = "Approved"; // Randevuyu onayla
+                appointment.Status = "Onay"; // Randevuyu onayla
                 _context.SaveChanges();
             }
 

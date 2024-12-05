@@ -57,12 +57,29 @@ namespace odev.Controllers
         [HttpPost]
         public IActionResult CreateAppointment(Appointment appointment,string Time)
         {
-            var userName = HttpContext.Session.GetString("Email");
+            var userName = HttpContext.Session.GetString("UserName");
 
             if (string.IsNullOrEmpty(userName))
             {
                 return RedirectToAction("Login", "Account"); // Kullanıcı giriş yapmamışsa
             }
+
+
+            var today = DateTime.Now;
+
+            if (appointment.Date < today || appointment.Date > today.AddDays(30))
+            {
+                TempData["AppErr"] = "Randevu 30 Gün İçinden Herhangi Bir Güne Alınabilir.";
+                return RedirectToAction("CreateAppointment");
+            }
+
+            if (appointment.Date.DayOfWeek == DayOfWeek.Saturday || appointment.Date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                TempData["AppErr"] = "Haftasonu Randevu Alınamaz.";
+                return RedirectToAction("CreateAppointment");
+            }
+
+
 
             // Çakışma kontrolü
             bool isAvailable = !_context.Appointments.Any(a =>
@@ -78,27 +95,20 @@ namespace odev.Controllers
                 return View(appointment);
             }
 
-            var existingAppointment = _context.Appointments
-                                                     .Where(a => a.UserName == appointment.UserName
-                                                                 && a.Date.Date == appointment.Date.Date) // Aynı gün randevu
-                                                     .FirstOrDefault();
 
-            if (existingAppointment != null)
-            {
-                // Eğer aynı günde zaten bir randevu varsa, hata mesajı göster
-                ModelState.AddModelError("", "Bu gün zaten bir randevunuz var. Lütfen başka bir tarih seçin.");
-                return RedirectToAction("Customerpanel"); // Hata ile geri dön
-            }
+            var barberService = _context.ServicePriceDurations
+                              .Where(s => s.BarberName == appointment.BarberName && s.Service == appointment.Service)
+                              .FirstOrDefault();
 
-            if (appointment.Date.DayOfWeek == DayOfWeek.Saturday || appointment.Date.DayOfWeek == DayOfWeek.Sunday)
+            if (barberService != null)
             {
-                ModelState.AddModelError("", "Hafta sonu randevu almanız mümkün değildir.");
-                return View(appointment); // Hata ile geri dön
+                appointment.Price = barberService.Price;
+                appointment.Duration = barberService.Duration;
             }
 
 
             appointment.UserName = userName; 
-            appointment.Status = "Valid";   
+            appointment.Status = "Beklemede";   
 
             // Randevuyu kaydet
             _context.Appointments.Add(appointment);
@@ -110,12 +120,13 @@ namespace odev.Controllers
         // Kullanıcının aldığı randevuları listeleme
         public IActionResult ListApp()
         {
-            var userName = HttpContext.Session.GetString("Email");
+            var userName = HttpContext.Session.GetString("UserName");
 
             if (string.IsNullOrEmpty(userName))
             {
                 return RedirectToAction("Login", "User");
             }
+
 
             var appointments = _context.Appointments
                 .Where(a => a.UserName == userName)

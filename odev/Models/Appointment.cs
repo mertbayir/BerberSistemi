@@ -8,7 +8,9 @@
         public string Service { get; set; }
         public DateTime Date { get; set; }
         public TimeSpan Time { get; set; }
-        public string Status { get; set; } = "Valid";
+        public string Status { get; set; } = "Beklemede";
+        public int Duration { get; set; }
+        public int Price { get; set; } 
 
     }
 
