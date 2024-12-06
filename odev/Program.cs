@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using odev.Models;
-using odev.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,7 +61,6 @@ using (var scope = app.Services.CreateScope())
 void ConfigureServices(IServiceCollection services)
 {
     services.AddHttpClient(); // HttpClient ekliyoruz
-    services.AddScoped<AIService>(); // Servisi ekliyoruz
 }
 
 
