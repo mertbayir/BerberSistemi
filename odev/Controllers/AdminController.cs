@@ -48,19 +48,23 @@ namespace odev.Controllers
 
                 var user = new User
                 {
-                    Email = model.User.Email, // Berber adı
-                    Password = model.User.Password, // Şifreyi istediğiniz gibi belirleyebilirsiniz
-                    Role = "Staff" // Kullanıcı rolü
+                    Email = model.User.Email,
+                    Password = model.User.Password, 
+                    UserName = model.User.UserName,
+                    Role = "Staff" 
                 };
 
                 _context.Users.Add(user);
                 _context.SaveChanges();
-;
+                ;
 
 
                 return RedirectToAction("Adminpanel", "Admin"); // Admin paneline geri döner
             }
-            return View(model); // Hatalı giriş varsa yeniden göster
+            else
+            {
+                return View(model); // Hatalı giriş varsa yeniden göster
+            }
         }
 
         public IActionResult Manage()
@@ -79,6 +83,36 @@ namespace odev.Controllers
             }
 
             return RedirectToAction("Manage"); // Yönetim sayfasına geri dön
+        }
+
+        public IActionResult BarberEarnings()
+        {
+            var barberEarnings = _context.Appointments
+         .GroupBy(a => new { a.BarberName, Date = a.Date.Date }) // Berber ve tarihi gruplandır
+         .Select(g => new
+         {
+             BarberName = g.Key.BarberName,
+             Date = g.Key.Date,
+             TotalEarnings = g.Sum(a => a.Price),
+             AppointmentsCount = g.Count()
+         })
+         .ToList()
+         .GroupBy(a => a.BarberName)
+         .Select(g => new BarberDailyEarningsViewModel
+         {
+             BarberName = g.Key,
+             DailyEarnings = g.Select(x => new DailyEarnings
+             {
+                 Date = x.Date,
+                 TotalEarnings = x.TotalEarnings
+             }).ToList(),
+             TotalAppointments = g.Sum(x => x.AppointmentsCount), // Toplam randevu sayısı
+             TotalEarnings = g.Sum(x => x.TotalEarnings) // Toplam kazanç
+         })
+         .ToList();
+
+            return View(barberEarnings);
+
         }
     }
 }
