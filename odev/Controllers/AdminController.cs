@@ -1,8 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using odev.Filters;
 using odev.Models;
 using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace odev.Controllers
 {
@@ -114,5 +120,6 @@ namespace odev.Controllers
             return View(barberEarnings);
 
         }
+
     }
 }
