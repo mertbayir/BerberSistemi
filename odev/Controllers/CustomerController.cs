@@ -42,12 +42,13 @@ namespace odev.Controllers
         {
             _context = context;
 
-
         }
+
         [HttpGet]
         public IActionResult CreateAppointment()
         {
-              var barbers = _context.Barbers.Select(b => new
+
+            var barbers = _context.Barbers.Select(b => new
         {
             b.Id,
             b.Name,

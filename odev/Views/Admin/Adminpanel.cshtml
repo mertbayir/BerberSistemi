@@ -1,6 +1,46 @@
 ﻿@model User
 @{
 	Layout = "_LayoutAdmin.cshtml";
+    ViewBag.Title = "Admin Sayfası";
 }
-<h2>Admin Paneli</h2>
 
+<div>
+    <h4>Hoş Geldiniz Sayın @TempData["UserName"]</h4>
+</div>
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Admin Paneli</h1>
+    <p class="text-center text-muted">Buradan kullanıcıları yönetebilir, berber ekleyebilir ve kazançlarını görüntüleyebilirsiniz.</p>
+
+    <div class="row text-center mt-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Kullanıcı Yönetimi</h5>
+                    <p class="card-text">Sistemdeki kullanıcıları görüntüleyebilir ve düzenleyebilirsiniz.</p>
+                    <a href="@Url.Action("Manage", "Admin")" class="btn btn-primary">Kullanıcıları Yönet</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Berber Ekle</h5>
+                    <p class="card-text">Yeni berber ekleyerek sisteminize dahil edebilirsiniz.</p>
+                    <a href="@Url.Action("AddBarber", "Admin")" class="btn btn-success">Berber Ekle</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Berber Kazançları</h5>
+                    <p class="card-text">Berberlerin kazançlarını 30 günlük olarak görüntüleyin.</p>
+                    <a href="@Url.Action("BarberEarnings", "Admin")" class="btn btn-info">Kazançları Görüntüle</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

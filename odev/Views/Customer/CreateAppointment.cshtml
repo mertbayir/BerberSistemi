@@ -1,23 +1,16 @@
-﻿@{
-    Layout = "_LayoutCustomer.cshtml";
-}
-
-@model odev.Models.Appointment
+﻿@model odev.Models.Appointment
 
 @{
     var barbers = ViewBag.Barbers;
+    ViewBag.Title = "Randevu Al";
+    Layout = "_LayoutCustomer.cshtml";
 }
-
-
-@if (TempData["AppErr"] != null)
-{
-    <div class="alert alert-warning">
-        @TempData["AppErr"]
-    </div>
-}
-
 
 <br />
+
+<div>
+    <h4>Hoş Geldiniz Sayın @TempData["UserName"]</h4>
+</div>
 
 <h2 class="text-center">Randevu Al</h2>
 

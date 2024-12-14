@@ -82,6 +82,8 @@ namespace odev.Controllers
                 HttpContext.Session.SetString("UserName", user.UserName);
                 HttpContext.Session.SetString("Role", user.Role);  // Kullanıcının rolünü kaydediyoruz
 
+                TempData["UserName"] = user.UserName;
+
                 // Role göre yönlendirme yap
                 if (user.Role == "Admin")
                 {

@@ -2,38 +2,42 @@
 
 @{
     Layout = "_LayoutAdmin.cshtml";
+    ViewBag.Title = "Berber Kazanç Yönetim Sayfası";
 }
 
-<h2>Berberlerin Günlük Kazançları</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Berberlerin Günlük Kazançları</h2>
 
-@foreach (var barber in Model)
-{
-    <h3>@barber.BarberName</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Tarih</th>
-                <th>Kazanç</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var earnings in barber.DailyEarnings)
-            {
-                <tr>
-                    <td>@earnings.Date.ToString("dd.MM.yyyy")</td>
-                    <td>@earnings.TotalEarnings.ToString("C")</td>
-                </tr>
-            }
-            <!-- Toplam Veriler -->
-            <tr>
-                <td><strong>Toplam:</strong></td>
-                <td>
-                    <strong>
-                        Randevu: @barber.TotalAppointments,
-                        Kazanç: @barber.TotalEarnings.ToString("C")
-                    </strong>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-}
+    @foreach (var barber in Model)
+    {
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5>@barber.BarberName</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Kazanç</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var earnings in barber.DailyEarnings)
+                        {
+                            <tr>
+                                <td>@earnings.Date.ToString("dd.MM.yyyy")</td>
+                                <td>@earnings.TotalEarnings.ToString("C")</td>
+                            </tr>
+                        }
+                        <!-- Toplam Veriler -->
+                        <tr class="font-weight-bold">
+                            <td><strong>Toplam:</strong></td>
+                            <td><strong>@barber.TotalAppointments randevu, Kazanç: @barber.TotalEarnings.ToString("C")</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

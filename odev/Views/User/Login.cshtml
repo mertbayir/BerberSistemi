@@ -1,17 +1,9 @@
 ﻿@model User
 @{
     ViewBag.Title = "Giriş Yap";
-    var errorMsg = ViewBag.ErrorMessage;
 }
 
 <h2 class="text-center">Giriş Yap</h2>
-
-@if (!string.IsNullOrEmpty(errorMsg))
-{
-    <div class="alert alert-danger text-center">
-        @errorMsg
-    </div>
-}
 
 <form asp-action="Login" asp-controller="User" method="post" class="login-form">
     <div class="form-group">
@@ -25,7 +17,7 @@
         <span asp-validation-for="Password" class="text-danger"></span>
     </div>
     <div class="form-group text-center">
-        <button type="submit" class="btn btn-primary btn-lg">Giriş Yap</button>
+        <button type="submit" class="btn btn-primary btn-lg" >Giriş Yap</button>
     </div>
     <div class="form-group text-center">
         <p>Üye Değil Misiniz? <a href="Register" class="btn-link">Buradan Üye Olun</a></p>
