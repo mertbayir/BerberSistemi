@@ -17,6 +17,14 @@ namespace odev.Controllers
     [AuthFilter("Customer")]
     public class CustomerController : Controller
     {
+        private readonly string _apiKey = "d4bf6bb0caa645388ac07d7ddcd6137a"; // Buraya Clarifai API Key yaz
+        private readonly HttpClient _httpClient;
+        public CustomerController() 
+        {
+            _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Key {_apiKey}");
+        } 
+
         public IActionResult Index()
         {
             ViewData["Layout"] = "~/Views/Customer/_LayoutCustomer.cshtml";
@@ -162,7 +170,17 @@ namespace odev.Controllers
 
             return RedirectToAction("ListApp");
         }
+        [HttpGet]
+        public IActionResult OneriAl()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> OneriAl(IFormFile photo)
+        {
+            return View();
+        }
 
     }
 }
