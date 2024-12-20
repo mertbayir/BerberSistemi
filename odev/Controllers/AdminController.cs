@@ -9,10 +9,11 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace odev.Controllers
 {
-    [AuthFilter("Admin")]
+    [Authorize(Roles ="Admin")]
     public class AdminController : Controller
     {
         private readonly UserContext _context;

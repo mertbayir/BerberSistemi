@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using odev.Models;
 using odev.Filters;
+using System.Security.Claims;
 
 namespace odev.Controllers
 {
@@ -48,22 +49,6 @@ namespace odev.Controllers
             }
         }
 
-
-        public IActionResult Adminpanel()
-        {
-            return View();
-        }
-
-        public IActionResult Staffpanel()
-        {
-            return View();
-        }
-
-        public IActionResult Customerpanel()
-        {
-            return View();
-        }
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -71,7 +56,7 @@ namespace odev.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(string email, string password)
+        public async Task<IActionResult> LoginAsync(string email, string password)
         {
             var user = _context.Users
         .FirstOrDefault(u => u.Email == email && u.Password == password);
@@ -88,14 +73,39 @@ namespace odev.Controllers
                 // Role göre yönlendirme yap
                 if (user.Role == "Admin")
                 {
+
+                    var claims = new List<Claim>
+                    {
+                    new Claim(ClaimTypes.Role, "Admin")
+                    };
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var authProperties = new AuthenticationProperties();
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
                     return RedirectToAction("Adminpanel", "Admin");
                 }
                 else if (user.Role == "Staff")
                 {
+
+                    var claims = new List<Claim>
+                    {
+                    new Claim(ClaimTypes.Role, "Staff")
+                    };
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var authProperties = new AuthenticationProperties();
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
                     return RedirectToAction("Staffpanel", "Staff");
                 }
                 else if (user.Role == "Customer")
                 {
+
+                    var claims = new List<Claim>
+                    {
+                    new Claim(ClaimTypes.Role, "Customer")
+                    };
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var authProperties = new AuthenticationProperties();
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
                     return RedirectToAction("Customerpanel", "Customer");
                 }
                 else

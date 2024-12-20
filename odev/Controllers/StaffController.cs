@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using odev.Filters;
 using odev.Models;
 
 namespace odev.Controllers
 {
+    [Authorize(Roles = "Staff")]
     public class StaffController : Controller
     {
         private readonly UserContext _context;
@@ -12,8 +14,6 @@ namespace odev.Controllers
         {
             _context = context;
         }
-
-        [AuthFilter("Staff")]
         public IActionResult Index()
         {
             ViewData["Layout"] = "~/Views/Staff/_LayoutStaff.cshtml";

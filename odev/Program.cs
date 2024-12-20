@@ -29,7 +29,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.Cookie.Name = "userauth";
         options.LoginPath = "/User/Login"; // Login sayfasý
-        options.LogoutPath = "/User/Logout"; // Logout iþlemi
         options.AccessDeniedPath = "/User/Login";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Oturum süresi
     });
@@ -69,10 +68,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication();
-
 app.UseSession();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

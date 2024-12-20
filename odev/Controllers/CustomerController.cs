@@ -11,19 +11,20 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace odev.Controllers
 {
-    [AuthFilter("Customer")]
+    [Authorize(Roles = "Customer")]
     public class CustomerController : Controller
     {
-        private readonly string _apiKey = "d4bf6bb0caa645388ac07d7ddcd6137a"; // Buraya Clarifai API Key yaz
-        private readonly HttpClient _httpClient;
-        public CustomerController() 
+        private readonly UserContext _context;
+
+        public CustomerController(UserContext context)
         {
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Key {_apiKey}");
-        } 
+            _context = context;
+
+        }
 
         public IActionResult Index()
         {
@@ -34,6 +35,7 @@ namespace odev.Controllers
         {
             return View();
         }
+
         public IActionResult Customerpanel()
         {
             return View();
@@ -42,14 +44,6 @@ namespace odev.Controllers
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
-        }
-
-        private readonly UserContext _context;
-
-        public CustomerController(UserContext context)
-        {
-            _context = context;
-
         }
 
         [HttpGet]
