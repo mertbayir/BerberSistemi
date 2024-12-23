@@ -19,6 +19,8 @@ namespace odev.Controllers
         {
             return View();
         }
+
+        [HttpGet]
         public IActionResult Register()
         {
             return View();
@@ -41,7 +43,7 @@ namespace odev.Controllers
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 foreach (var error in errors)
                 {
-                    Console.WriteLine(error); // Konsola yaz
+                    Console.WriteLine(error);
                 }
 
                 TempData["ErrorMessage"] = "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.";
@@ -56,21 +58,19 @@ namespace odev.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginAsync(string email, string password)
+        public async Task<IActionResult> Login(string email, string password)
         {
             var user = _context.Users
         .FirstOrDefault(u => u.Email == email && u.Password == password);
 
             if (user != null)
             {
-                // Kullanıcı bulunduysa, role bilgisini session'a kaydet
                 HttpContext.Session.SetString("Email", user.Email);
                 HttpContext.Session.SetString("UserName", user.UserName);
-                HttpContext.Session.SetString("Role", user.Role);  // Kullanıcının rolünü kaydediyoruz
+                HttpContext.Session.SetString("Role", user.Role);  
 
                 TempData["UserName"] = user.UserName;
 
-                // Role göre yönlendirme yap
                 if (user.Role == "Admin")
                 {
 

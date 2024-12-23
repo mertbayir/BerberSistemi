@@ -1,0 +1,11 @@
+﻿@model List<string>
+
+<h2>Önerilen Saç ve Sakal Modelleri</h2>
+<ul>
+    @foreach (var suggestion in Model)
+    {
+        <li>@suggestion</li>
+    }
+</ul>
+<a href="/">Yeni Fotoğraf Yükle</a>
+

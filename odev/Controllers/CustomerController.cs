@@ -12,6 +12,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace odev.Controllers
 {
@@ -57,13 +59,11 @@ namespace odev.Controllers
             b.Skills
         }).ToList();
 
-        // Veriyi View'a gönder
         ViewBag.Barbers = barbers;
 
         return View();
         }
 
-        // Create Appointment - POST Method
         [HttpPost]
         public IActionResult CreateAppointment(Appointment appointment,string Time)
         {
@@ -71,7 +71,7 @@ namespace odev.Controllers
 
             if (string.IsNullOrEmpty(userName))
             {
-                return RedirectToAction("Login", "Account"); // Kullanıcı giriş yapmamışsa
+                return RedirectToAction("Login", "Account");
             }
 
 
@@ -91,7 +91,6 @@ namespace odev.Controllers
 
 
 
-            // Çakışma kontrolü
             bool isAvailable = !_context.Appointments.Any(a =>
                 a.BarberName == appointment.BarberName &&
                 a.Date == appointment.Date &&
@@ -120,14 +119,12 @@ namespace odev.Controllers
             appointment.UserName = userName; 
             appointment.Status = "Beklemede";   
 
-            // Randevuyu kaydet
             _context.Appointments.Add(appointment);
             _context.SaveChanges();
 
             return RedirectToAction("ListApp");
         }
 
-        // Kullanıcının aldığı randevuları listeleme
         public IActionResult ListApp()
         {
             var userName = HttpContext.Session.GetString("UserName");
@@ -148,7 +145,6 @@ namespace odev.Controllers
         [HttpPost]
         public IActionResult DeleteAppointment(int id)
         {
-            // İlgili randevuyu bul
             var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
 
             if (appointment != null)
@@ -164,17 +160,94 @@ namespace odev.Controllers
 
             return RedirectToAction("ListApp");
         }
+
         [HttpGet]
-        public IActionResult OneriAl()
+        public async Task<IActionResult> UploadPhoto()
         {
             return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> UploadPhoto(IFormFile photo)
+        {
+            if (photo == null || photo.Length == 0)
+            {
+                return BadRequest("Lütfen bir fotoğraf yükleyin.");
+            }
+
+            using var memoryStream = new MemoryStream();
+            await photo.CopyToAsync(memoryStream);
+            var photoBytes = memoryStream.ToArray();
+
+            try
+            {
+                var apiResult = await CallFacePlusPlusAPI(photoBytes);
+                var suggestions = ProcessFacePlusPlusResult(apiResult);
+
+                return View("Suggestions", suggestions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Hata oluştu: {ex.Message}");
+            }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> OneriAl(IFormFile photo)
+        private async Task<string> CallFacePlusPlusAPI(byte[] photoBytes)
         {
-            return View();
+            var apiKey = "nX2zV78ns8oJ_UGTJyjOPAwBnayEo777"; 
+            var apiSecret = "vLYzT67UMwc_7XT0X5H8EbeKp_N2SqFm"; 
+
+            var httpClient = new HttpClient();
+
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent(apiKey), "api_key" },
+                { new StringContent(apiSecret), "api_secret" },
+                { new ByteArrayContent(photoBytes), "image_file", "photo.jpg" }
+            };
+
+            var response = await httpClient.PostAsync("https://api-us.faceplusplus.com/facepp/v3/detect", content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"API çağrısı başarısız oldu: {response.StatusCode}, Yanıt: {responseContent}");
+            }
+
+            return responseContent;
         }
+
+        private List<string> ProcessFacePlusPlusResult(string apiResult)
+        {
+            var jsonResult = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiResult);
+
+            if (jsonResult.ContainsKey("faces") && jsonResult["faces"] is Newtonsoft.Json.Linq.JArray faces && faces.Count > 0)
+            {
+                var suggestions = new List<string>();
+
+                foreach (var face in faces)
+                {
+                    var attributes = face["attributes"];
+                    var gender = attributes["gender"]["value"].ToString();
+                    var age = int.Parse(attributes["age"]["value"].ToString());
+
+                    if (gender == "Male")
+                    {
+                        suggestions.Add(age < 30 ? "Kısa saç ve hafif sakal" : "Orta uzunlukta saç ve yoğun sakal");
+                    }
+                    else
+                    {
+                        suggestions.Add("Saç şeklinizi koruyun.");
+                    }
+                }
+
+                return suggestions;
+            }
+
+            return new List<string> { "Hiçbir yüz algılanamadı. Lütfen başka bir fotoğraf yükleyin." };
+        }
+
+
 
     }
 }

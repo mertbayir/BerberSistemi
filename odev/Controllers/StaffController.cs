@@ -33,37 +33,46 @@ namespace odev.Controllers
         {
             string staffEmail = HttpContext.Session.GetString("UserName");
 
+            var currentDate = DateTime.Now.Date;
+            var currentTime = DateTime.Now.TimeOfDay;
 
             var appointments = _context.Appointments
-                         .Where(a => a.BarberName == staffEmail) // BarberName yerine uygun alanı kullanın
-                         .OrderBy(a => a.Date)
-                         .ThenBy(a => a.Time)
-                         .ToList();
+                .Where(a => a.BarberName == staffEmail)
+                .OrderBy(a => a.Date)
+                .ThenBy(a => a.Time)
+                .ToList();
 
-            return View(appointments);
+            var pastAppointments = appointments
+                .Where(a => a.Date < currentDate || (a.Date == currentDate && a.Time < currentTime))
+                .ToList();
 
+            var futureAppointments = appointments
+                .Where(a => a.Date > currentDate || (a.Date == currentDate && a.Time >= currentTime))
+                .ToList();
 
+            ViewBag.PastAppointments = pastAppointments;
+            ViewBag.FutureAppointments = futureAppointments;
+
+            return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteAppointment(int id)
         {
-            // Randevuyu bul
             var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
 
             if (appointment == null)
             {
-                return NotFound(); // Eğer randevu bulunamazsa hata döndür
+                return NotFound(); 
             }
 
             if (appointment != null)
             {
-                appointment.Status = "İptal"; // Randevuyu onayla
+                appointment.Status = "İptal"; 
                 _context.SaveChanges();
             }
 
-            // Randevu listesine geri dön
             return RedirectToAction("ManageApp");
         }
 
@@ -73,11 +82,11 @@ namespace odev.Controllers
             var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
             if (appointment != null)
             {
-                appointment.Status = "Onay"; // Randevuyu onayla
+                appointment.Status = "Onay"; 
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("ManageApp"); // İşlemden sonra tekrar randevuları listele
+            return RedirectToAction("ManageApp"); 
         }
 
     }
