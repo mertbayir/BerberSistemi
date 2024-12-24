@@ -33,7 +33,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Oturum süresi
     });
 
-builder.Services.Configure<FacePlusPlusSettings>(builder.Configuration.GetSection("FacePlusPlus"));
 
 var app = builder.Build();
 

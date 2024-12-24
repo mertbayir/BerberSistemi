@@ -45,6 +45,13 @@
 
     <br />
 
+    <!-- Fiyat Alanı -->
+    <div class="form-group">
+        <label for="Price">Hizmet Ücreti:</label>
+        <input type="text" id="Price" class="form-control" readonly />
+    </div>
+
+    <br />
 
     <!-- Tarih Seçimi -->
     <div class="form-group">
@@ -53,7 +60,6 @@
     </div>
 
     <br />
-
 
     <!-- Saat Seçimi -->
     <div class="form-group">
@@ -77,22 +83,18 @@
     </div>
 </form>
 
-
 <script>
     function updateSkills() {
         var barberSelect = document.getElementById("Name");
         var barberName = barberSelect.value;
 
-        // Berber seçeneklerini al
         var selectedBarber = Array.from(barberSelect.options).find(option => option.value === barberName);
         var skills = selectedBarber ? selectedBarber.getAttribute("data-skills") : "";
 
-        // Hizmetler dropdown'ını temizle
         var skillsSelect = document.getElementById("Skills");
         skillsSelect.innerHTML = '<option value="" disabled selected>Hizmet Seçin</option>';
 
         if (skills) {
-            // Berberin hizmetlerini virgülle ayırarak ekle
             var skillsList = skills.split(',');
             skillsList.forEach(function (skill) {
                 var option = document.createElement("option");
@@ -102,4 +104,25 @@
             });
         }
     }
+
+    document.getElementById("Skills").addEventListener("change", function () {
+        var barberName = document.getElementById("Name").value;
+        var service = this.value;
+
+        if (barberName && service) {
+            fetch(`/Customer/GetServicePrice?barberName=${barberName}&service=${service}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("Price").value = `${data.price} ₺`;
+                    } else {
+                        document.getElementById("Price").value = "Fiyat bilgisi alınamadı.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Hata:", error);
+                    document.getElementById("Price").value = "Bir hata oluştu.";
+                });
+        }
+    });
 </script>

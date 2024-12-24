@@ -5,15 +5,13 @@ using odev.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
-using System.Reflection.Metadata;
-using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace odev.Controllers
 {
@@ -21,11 +19,16 @@ namespace odev.Controllers
     public class CustomerController : Controller
     {
         private readonly UserContext _context;
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
 
-        public CustomerController(UserContext context)
+        public CustomerController(UserContext context, IConfiguration configuration)
         {
             _context = context;
-
+            _configuration = configuration;
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri("https://api.clarifai.com/v2/");
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Key {_configuration["Clarifai:ApiKey"]}");
         }
 
         public IActionResult Index()
@@ -33,6 +36,7 @@ namespace odev.Controllers
             ViewData["Layout"] = "~/Views/Customer/_LayoutCustomer.cshtml";
             return View();
         }
+
         public IActionResult Appointment()
         {
             return View();
@@ -42,6 +46,7 @@ namespace odev.Controllers
         {
             return View();
         }
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
@@ -51,21 +56,20 @@ namespace odev.Controllers
         [HttpGet]
         public IActionResult CreateAppointment()
         {
-
             var barbers = _context.Barbers.Select(b => new
-        {
-            b.Id,
-            b.Name,
-            b.Skills
-        }).ToList();
+            {
+                b.Id,
+                b.Name,
+                b.Skills
+            }).ToList();
 
-        ViewBag.Barbers = barbers;
+            ViewBag.Barbers = barbers;
 
-        return View();
+            return View();
         }
 
         [HttpPost]
-        public IActionResult CreateAppointment(Appointment appointment,string Time)
+        public IActionResult CreateAppointment(Appointment appointment, string Time)
         {
             var userName = HttpContext.Session.GetString("UserName");
 
@@ -73,7 +77,6 @@ namespace odev.Controllers
             {
                 return RedirectToAction("Login", "Account");
             }
-
 
             var today = DateTime.Now;
 
@@ -89,8 +92,6 @@ namespace odev.Controllers
                 return RedirectToAction("CreateAppointment");
             }
 
-
-
             bool isAvailable = !_context.Appointments.Any(a =>
                 a.BarberName == appointment.BarberName &&
                 a.Date == appointment.Date &&
@@ -104,10 +105,9 @@ namespace odev.Controllers
                 return View(appointment);
             }
 
-
             var barberService = _context.ServicePriceDurations
-                              .Where(s => s.BarberName == appointment.BarberName && s.Service == appointment.Service)
-                              .FirstOrDefault();
+                                  .Where(s => s.BarberName == appointment.BarberName && s.Service == appointment.Service)
+                                  .FirstOrDefault();
 
             if (barberService != null)
             {
@@ -115,15 +115,29 @@ namespace odev.Controllers
                 appointment.Duration = barberService.Duration;
             }
 
-
-            appointment.UserName = userName; 
-            appointment.Status = "Beklemede";   
+            appointment.UserName = userName;
+            appointment.Status = "Beklemede";
 
             _context.Appointments.Add(appointment);
             _context.SaveChanges();
 
             return RedirectToAction("ListApp");
         }
+
+        [HttpGet]
+        public IActionResult GetServicePrice(string barberName, string service)
+        {
+            var serviceDetail = _context.ServicePriceDurations
+                .FirstOrDefault(s => s.BarberName == barberName && s.Service == service);
+
+            if (serviceDetail == null)
+            {
+                return Json(new { success = false, message = "Hizmet bulunamadı." });
+            }
+
+            return Json(new { success = true, price = serviceDetail.Price });
+        }
+
 
         public IActionResult ListApp()
         {
@@ -133,7 +147,6 @@ namespace odev.Controllers
             {
                 return RedirectToAction("Login", "User");
             }
-
 
             var appointments = _context.Appointments
                 .Where(a => a.UserName == userName)
@@ -162,91 +175,139 @@ namespace odev.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> UploadPhoto()
+        public IActionResult HairAnalysis()
         {
             return View();
         }
+
         [HttpPost]
-        public async Task<IActionResult> UploadPhoto(IFormFile photo)
+        public async Task<IActionResult> AnalyzeImage(IFormFile photo)
         {
-            if (photo == null || photo.Length == 0)
-            {
-                return BadRequest("Lütfen bir fotoğraf yükleyin.");
-            }
-
-            using var memoryStream = new MemoryStream();
-            await photo.CopyToAsync(memoryStream);
-            var photoBytes = memoryStream.ToArray();
-
             try
             {
-                var apiResult = await CallFacePlusPlusAPI(photoBytes);
-                var suggestions = ProcessFacePlusPlusResult(apiResult);
+                using var ms = new MemoryStream();
+                await photo.CopyToAsync(ms);
+                var imageBytes = ms.ToArray();
+                var base64Image = Convert.ToBase64String(imageBytes);
 
-                return View("Suggestions", suggestions);
+                var requestBody = new
+                {
+                    inputs = new[]
+                    {
+                new
+                {
+                    data = new
+                    {
+                        image = new
+                        {
+                            base64 = base64Image
+                        }
+                    }
+                }
+            }
+                };
+
+                var response = await _httpClient.PostAsJsonAsync("models/aaa03c23b3724a16a56b629203edc62c/outputs", requestBody);
+                response.EnsureSuccessStatusCode();
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
+                var concepts = result.outputs[0].data.concepts;
+
+                // Yüz özelliklerini analiz et
+                var features = AnalyzeFaceFeatures(concepts);
+
+                // Öneriler oluştur
+                var recommendation = GenerateStyleRecommendation(features);
+                ViewBag.Analysis = recommendation;
+                return View("HairAnalysisResult");
             }
             catch (Exception ex)
             {
-                return BadRequest($"Hata oluştu: {ex.Message}");
+                ViewBag.Error = $"Hata: {ex.Message}";
+                return View("Error");
             }
         }
-
-        private async Task<string> CallFacePlusPlusAPI(byte[] photoBytes)
+        private List<string> AnalyzeFaceFeatures(dynamic concepts)
         {
-            var apiKey = "nX2zV78ns8oJ_UGTJyjOPAwBnayEo777"; 
-            var apiSecret = "vLYzT67UMwc_7XT0X5H8EbeKp_N2SqFm"; 
+            var features = new List<string>();
+            bool isBald = false;
+            bool hasBeard = false;
 
-            var httpClient = new HttpClient();
-
-            var content = new MultipartFormDataContent
+            foreach (var concept in concepts)
             {
-                { new StringContent(apiKey), "api_key" },
-                { new StringContent(apiSecret), "api_secret" },
-                { new ByteArrayContent(photoBytes), "image_file", "photo.jpg" }
-            };
-
-            var response = await httpClient.PostAsync("https://api-us.faceplusplus.com/facepp/v3/detect", content);
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"API çağrısı başarısız oldu: {response.StatusCode}, Yanıt: {responseContent}");
-            }
-
-            return responseContent;
-        }
-
-        private List<string> ProcessFacePlusPlusResult(string apiResult)
-        {
-            var jsonResult = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiResult);
-
-            if (jsonResult.ContainsKey("faces") && jsonResult["faces"] is Newtonsoft.Json.Linq.JArray faces && faces.Count > 0)
-            {
-                var suggestions = new List<string>();
-
-                foreach (var face in faces)
+                double value = Convert.ToDouble(concept.value);
+                if (value > 0.6) // Yüksek güven seviyesine göre filtreleme
                 {
-                    var attributes = face["attributes"];
-                    var gender = attributes["gender"]["value"].ToString();
-                    var age = int.Parse(attributes["age"]["value"].ToString());
+                    var featureName = concept.name.ToString().ToLower();
 
-                    if (gender == "Male")
+                    if (featureName == "bald")
                     {
-                        suggestions.Add(age < 30 ? "Kısa saç ve hafif sakal" : "Orta uzunlukta saç ve yoğun sakal");
+                        isBald = true; // Kellik durumunu işaretle
                     }
-                    else
+                    else if (featureName == "beard")
                     {
-                        suggestions.Add("Saç şeklinizi koruyun.");
+                        hasBeard = true; // Sakal varsa işaretle
+                    }
+                    else if (featureName == "no-beard")
+                    {
+                        hasBeard = false; // Sakal yoksa işaretle
+                    }
+                    else if (featureName == "young" || featureName == "adult" || featureName == "round" || featureName == "square")
+                    {
+                        features.Add(featureName); // Diğer yüz özelliklerini ekle
                     }
                 }
-
-                return suggestions;
             }
 
-            return new List<string> { "Hiçbir yüz algılanamadı. Lütfen başka bir fotoğraf yükleyin." };
+            // Saç ve sakal durumuna göre özellik ekleme
+            if (!isBald)
+            {
+                features.Add("saç"); // Saçı varsa saç özelliklerini ekle
+            }
+            else
+            {
+                features.Add("kel"); // Kel ise "kel" özelliğini ekle
+            }
+
+            if (hasBeard)
+            {
+                features.Add("sakal"); // Sakalı varsa sakal özelliklerini ekle
+            }
+            else
+            {
+                features.Add("sakalsız"); // Sakalı yoksa "sakalsız" özelliğini ekle
+            }
+
+            return features;
         }
 
+
+
+        private string GenerateStyleRecommendation(List<string> features)
+        {
+            var recommendations = new List<string>();
+
+            if (features.Contains("kel") && !features.Contains("saç"))
+            {
+                recommendations.Add("Kel görünüm için modern ve temiz bir tarz önerilir.");
+            }
+            else if (features.Contains("saç"))
+            {
+                recommendations.Add("Saçlar için modern kesim, pompadour veya fade tarzları düşünülebilir.");
+            }
+
+            if (features.Contains("sakal"))
+            {
+                recommendations.Add("Sakal için tam sakal, kirli sakal veya düzenli bakımlı tarz önerilir.");
+            }
+            else if (features.Contains("sakalsız"))
+            {
+                recommendations.Add("Sakalsız bir görünüm için temiz yüz ve klasik erkek saç kesimi uygundur.");
+            }
+
+            return string.Join("\n", recommendations);
+        }
 
 
     }
