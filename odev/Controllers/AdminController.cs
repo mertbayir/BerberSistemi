@@ -43,30 +43,80 @@ namespace odev.Controllers
             var model = new BarberUserViewModel();
             return View(model);
         }
-
         [HttpPost]
         public IActionResult AddBarber(BarberUserViewModel model)
         {
             if (ModelState.IsValid)
             {
+                // Berber bilgilerini ekliyoruz
                 _context.Barbers.Add(model.Barber);
                 _context.SaveChanges();
 
-
+                // Kullanıcıyı ekliyoruz
                 var user = new User
                 {
                     Email = model.User.Email,
-                    Password = model.User.Password, 
+                    Password = model.User.Password,
                     UserName = model.User.UserName,
-                    Role = "Staff" 
+                    Role = "Staff"
                 };
 
                 _context.Users.Add(user);
                 _context.SaveChanges();
-                ;
 
+                // Yetenekler kısmındaki verileri alıp, her bir yeteneği işlemeye başlıyoruz
+                var skills = model.Barber.Skills.Split(','); // Yetenekler virgülle ayrılmış
+                foreach (var skill in skills)
+                {
+                    string serviceName = skill.Trim(); // Gereksiz boşlukları temizliyoruz
 
-                return RedirectToAction("Adminpanel", "Admin"); 
+                    // Her hizmet için ücret ve süre belirliyoruz
+                    int price = 0;
+                    int duration = 0;
+
+                    switch (serviceName)
+                    {
+                        case "Saç Kesim":
+                            price = 500;
+                            duration = 60;
+                            break;
+                        case "Tasarım Traş":
+                            price = 1500;
+                            duration = 90;
+                            break;
+                        case "Çocuk Traşı":
+                            price = 250;
+                            duration = 45;
+                            break;
+                        case "Sakal Kesim":
+                            price = 300;
+                            duration = 45;
+                            break;
+                        case "Saç Boyama":
+                            price = 300;
+                            duration = 75;
+                            break;
+                        // Diğer hizmetler için de benzer switch-case ekleyebilirsiniz
+                        default:
+                            price = 0;
+                            duration = 0;
+                            break;
+                    }
+
+                    // ServicePriceDuration tablosuna ekliyoruz
+                    var servicePriceDuration = new ServicePriceDuration
+                    {
+                        BarberName = model.Barber.Name,  // Berberin adı
+                        Service = serviceName,            // Hizmet adı
+                        Price = price,                    // Ücret
+                        Duration = duration               // Süre
+                    };
+
+                    _context.ServicePriceDurations.Add(servicePriceDuration);
+                }
+
+                _context.SaveChanges(); // Değişiklikleri kaydediyoruz
+                return RedirectToAction("Adminpanel", "Admin");
             }
             else
             {
