@@ -115,7 +115,7 @@ namespace odev.Controllers
             }
             else
             {
-                ViewBag.ErrorMessage = "Kullanıcı adı veya şifre hatalı.";
+                ViewBag.Error = "Kullanıcı adı veya şifre hatalı.";
                 return View();
             }
         }

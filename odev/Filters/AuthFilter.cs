@@ -10,7 +10,7 @@ namespace odev.Filters
 
         public AuthFilter(string role)
         {
-            _role = role; // Hangi rolü kontrol etmek istiyorsak, onu alıyoruz
+            _role = role; 
         }
 
         public void OnActionExecuting(ActionExecutingContext context)
@@ -18,10 +18,9 @@ namespace odev.Filters
 
             var userRole = context.HttpContext.Session.GetString("Role");
 
-            // Rol bilgisi yoksa veya yanlışsa yönlendirme yapılır
             if (userRole == null || userRole != _role)
             {
-                context.Result = new RedirectToActionResult("Login", "User", null); // Ana sayfaya yönlendir
+                context.Result = new RedirectToActionResult("Login", "User", null); 
             }
         }
 

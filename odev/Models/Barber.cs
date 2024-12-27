@@ -11,5 +11,8 @@ namespace odev.Models
 
         [Required(ErrorMessage = "Yetenek gereklidir.")]
         public string Skills { get; set; }
+
+        [Required(ErrorMessage = "Özel Yetenek gereklidir.")]
+        public string Specialization {  get; set; }
     }
 }

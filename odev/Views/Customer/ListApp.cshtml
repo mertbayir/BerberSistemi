@@ -3,65 +3,96 @@
     ViewBag.Title = "Randevu Listele";
 }
 
-@model List<odev.Models.Appointment>
-
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Alınan Randevular</h2>
-
-    <!-- Başarı ve Hata Mesajları -->
-    @if (TempData["Message"] != null)
+    <h2 class="text-center mb-4">Randevu Listele</h2>
+    
+    <h4 class="mt-4">Geçmiş Randevular</h4>
+    @if (ViewBag.PastAppointments.Count > 0)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["Message"]
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["Error"]
-        </div>
-    }
-
-    <!-- Tablo -->
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Berber Adı</th>
-                    <th>Hizmet</th>
-                    <th>Tarih</th>
-                    <th>Saat</th>
-                    <th>Durum</th>
-                    <th>Süre (dk)</th>
-                    <th>Ücret (₺)</th>
-                    <th>İptal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var appointment in Model)
-                {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
                     <tr>
-                        <td>@appointment.BarberName</td>
-                        <td>@appointment.Service</td>
-                        <td>@appointment.Date.ToShortDateString()</td>
-                        <td>@appointment.Time.ToString(@"hh\:mm")</td>
-                        <td>@appointment.Status</td>
-                        <td>@appointment.Duration</td>
-                        <td>@appointment.Price</td>
-                        <td>
-                            <form asp-action="DeleteAppointment" method="post" style="display:inline;">
-                                <input type="hidden" name="id" value="@appointment.Id" />
-                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu randevuyu silmek istediğinize emin misiniz?');">
-                                    <i class="fas fa-trash-alt"></i> Sil
-                                </button>
-                            </form>
-                        </td>
+                        <th>Berber Adı</th>
+                        <th>Hizmet</th>
+                        <th>Tarih</th>
+                        <th>Saat</th>
+                        <th>Durum</th>
+                        <th>Süre (dk)</th>
+                        <th>Ücret (₺)</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in ViewBag.PastAppointments)
+                    {
+                        <tr>
+                            <td>@appointment.BarberName</td>
+                            <td>@appointment.Service</td>
+                            <td>@appointment.Date.ToShortDateString()</td>
+                            <td>@appointment.Time.ToString(@"hh\:mm")</td>
+                            <td>@appointment.Status</td>
+                            <td>@appointment.Duration</td>
+                            <td>@appointment.Price</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Geçmiş randevunuz bulunmamaktadır.</p>
+    }
+
+    <h4 class="mt-4">Gelecek Randevular</h4>
+    @if (ViewBag.FutureAppointments.Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Berber Adı</th>
+                        <th>Hizmet</th>
+                        <th>Tarih</th>
+                        <th>Saat</th>
+                        <th>Durum</th>
+                        <th>Süre (dk)</th>
+                        <th>Ücret (₺)</th>
+                        <th>İptal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appointment in ViewBag.FutureAppointments)
+                    {
+                        <tr>
+                            <td>@appointment.BarberName</td>
+                            <td>@appointment.Service</td>
+                            <td>@appointment.Date.ToShortDateString()</td>
+                            <td>@appointment.Time.ToString(@"hh\:mm")</td>
+                            <td>@appointment.Status</td>
+                            <td>@appointment.Duration</td>
+                            <td>@appointment.Price</td>
+                            <td>
+                                <form asp-action="DeleteAppointment" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@appointment.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu randevuyu silmek istediğinize emin misiniz?');">
+                                        <i class="fas fa-trash-alt"></i> Sil
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>Gelecek randevunuz bulunmamaktadır.</p>
+    }
+
+
+
 </div>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

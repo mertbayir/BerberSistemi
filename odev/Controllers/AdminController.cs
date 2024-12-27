@@ -48,11 +48,9 @@ namespace odev.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Berber bilgilerini ekliyoruz
                 _context.Barbers.Add(model.Barber);
                 _context.SaveChanges();
 
-                // Kullanıcıyı ekliyoruz
                 var user = new User
                 {
                     Email = model.User.Email,
@@ -64,13 +62,11 @@ namespace odev.Controllers
                 _context.Users.Add(user);
                 _context.SaveChanges();
 
-                // Yetenekler kısmındaki verileri alıp, her bir yeteneği işlemeye başlıyoruz
-                var skills = model.Barber.Skills.Split(','); // Yetenekler virgülle ayrılmış
+                var skills = model.Barber.Skills.Split(','); 
                 foreach (var skill in skills)
                 {
-                    string serviceName = skill.Trim(); // Gereksiz boşlukları temizliyoruz
+                    string serviceName = skill.Trim(); 
 
-                    // Her hizmet için ücret ve süre belirliyoruz
                     int price = 0;
                     int duration = 0;
 
@@ -96,26 +92,24 @@ namespace odev.Controllers
                             price = 300;
                             duration = 75;
                             break;
-                        // Diğer hizmetler için de benzer switch-case ekleyebilirsiniz
                         default:
                             price = 0;
                             duration = 0;
                             break;
                     }
 
-                    // ServicePriceDuration tablosuna ekliyoruz
                     var servicePriceDuration = new ServicePriceDuration
                     {
-                        BarberName = model.Barber.Name,  // Berberin adı
-                        Service = serviceName,            // Hizmet adı
-                        Price = price,                    // Ücret
-                        Duration = duration               // Süre
+                        BarberName = model.Barber.Name, 
+                        Service = serviceName,          
+                        Price = price,                   
+                        Duration = duration              
                     };
 
                     _context.ServicePriceDurations.Add(servicePriceDuration);
                 }
 
-                _context.SaveChanges(); // Değişiklikleri kaydediyoruz
+                _context.SaveChanges();
                 return RedirectToAction("Adminpanel", "Admin");
             }
             else

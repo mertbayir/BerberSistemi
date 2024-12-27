@@ -92,6 +92,11 @@ namespace odev.Controllers
                 return RedirectToAction("CreateAppointment");
             }
 
+            var barber = _context.Barbers.FirstOrDefault(b => b.Name == appointment.BarberName);
+
+            TempData["Specialization"] = barber.Specialization;
+            
+
             bool isAvailable = !_context.Appointments.Any(a =>
                 a.BarberName == appointment.BarberName &&
                 a.Date == appointment.Date &&
@@ -106,8 +111,8 @@ namespace odev.Controllers
             }
 
             var barberService = _context.ServicePriceDurations
-                                  .Where(s => s.BarberName == appointment.BarberName && s.Service == appointment.Service)
-                                  .FirstOrDefault();
+                                      .Where(s => s.BarberName == appointment.BarberName && s.Service == appointment.Service)
+                                      .FirstOrDefault();
 
             if (barberService != null)
             {
@@ -123,6 +128,26 @@ namespace odev.Controllers
 
             return RedirectToAction("ListApp");
         }
+
+
+        [HttpGet]
+        public JsonResult GetBarberSpecialization(string barberName)
+        {
+            if (string.IsNullOrEmpty(barberName))
+            {
+                return Json(new { specialization = "Lütfen geçerli bir berber seçin." });
+            }
+
+            var barber = _context.Barbers.FirstOrDefault(b => b.Name == barberName);
+            if (barber != null)
+            {
+                return Json(new { specialization = barber.Specialization });
+            }
+
+            return Json(new { specialization = "Uzmanlık bulunamadı." });
+        }
+
+
 
         [HttpGet]
         public IActionResult GetServicePrice(string barberName, string service)
@@ -148,9 +173,25 @@ namespace odev.Controllers
                 return RedirectToAction("Login", "User");
             }
 
+            var currentDate = DateTime.Now.Date;
+            var currentTime = DateTime.Now.TimeOfDay;
+
             var appointments = _context.Appointments
                 .Where(a => a.UserName == userName)
+                .OrderBy(a => a.Date)
+                .ThenBy(a => a.Time)
                 .ToList();
+
+            var pastAppointments = appointments
+                .Where(a => a.Date < currentDate || (a.Date == currentDate && a.Time < currentTime))
+                .ToList();
+
+            var futureAppointments = appointments
+                .Where(a => a.Date > currentDate || (a.Date == currentDate && a.Time >= currentTime))
+                .ToList();
+
+            ViewBag.PastAppointments = pastAppointments;
+            ViewBag.FutureAppointments = futureAppointments;
 
             return View(appointments);
         }
@@ -214,10 +255,8 @@ namespace odev.Controllers
                 var result = JsonConvert.DeserializeObject<dynamic>(responseContent);
                 var concepts = result.outputs[0].data.concepts;
 
-                // Yüz özelliklerini analiz et
                 var features = AnalyzeFaceFeatures(concepts);
 
-                // Öneriler oluştur
                 var recommendation = GenerateStyleRecommendation(features);
                 ViewBag.Analysis = recommendation;
                 return View("HairAnalysisResult");
@@ -237,46 +276,45 @@ namespace odev.Controllers
             foreach (var concept in concepts)
             {
                 double value = Convert.ToDouble(concept.value);
-                if (value > 0.6) // Yüksek güven seviyesine göre filtreleme
+                if (value > 0.6) 
                 {
                     var featureName = concept.name.ToString().ToLower();
 
                     if (featureName == "bald")
                     {
-                        isBald = true; // Kellik durumunu işaretle
+                        isBald = true; 
                     }
                     else if (featureName == "beard")
                     {
-                        hasBeard = true; // Sakal varsa işaretle
+                        hasBeard = true; 
                     }
                     else if (featureName == "no-beard")
                     {
-                        hasBeard = false; // Sakal yoksa işaretle
+                        hasBeard = false; 
                     }
                     else if (featureName == "young" || featureName == "adult" || featureName == "round" || featureName == "square")
                     {
-                        features.Add(featureName); // Diğer yüz özelliklerini ekle
+                        features.Add(featureName); 
                     }
                 }
             }
 
-            // Saç ve sakal durumuna göre özellik ekleme
             if (!isBald)
             {
-                features.Add("saç"); // Saçı varsa saç özelliklerini ekle
+                features.Add("saç"); 
             }
             else
             {
-                features.Add("kel"); // Kel ise "kel" özelliğini ekle
+                features.Add("kel");
             }
 
             if (hasBeard)
             {
-                features.Add("sakal"); // Sakalı varsa sakal özelliklerini ekle
+                features.Add("sakal");
             }
             else
             {
-                features.Add("sakalsız"); // Sakalı yoksa "sakalsız" özelliğini ekle
+                features.Add("sakalsız"); 
             }
 
             return features;
