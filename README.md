@@ -1,1 +1,3 @@
-Sakarya Üniversitesi Bilgisayar Mühendisliği 2024/2025 Güz Dönemi Web Programlama Dersi Berber Web Sitesi Proje Ödevi
+Sakarya Üniversitesi Bilgisayar Mühendisliği 2024/2025 Güz Dönemi Web Programlama Dersi Berber Web Sitesi Proje Ödevi.
+
+Ödevim bir berber sistemi. Kullanıcılar admin, berberler ve müşteriler. Müşteriler randevu alabiliyor, randevularını düzenleyebiliyor ve geçmiş-gelecek randevularını görüntüleyebiliyor. Ayrıca yapay zeka desteğiyle fotoğraf yükleyerek saç/sakal önerileri alabiliyor. Berberler kendilerinden alınmış randevuları görüntüleyip randevuları düzenleyebiliyor. Admin ise kullanıcıları yönetebiliyor, berber ekleyebiliyor, berberlerin aylık kazançlarını ve randevularını görüntüleyebiliyor. 
